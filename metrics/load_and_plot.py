@@ -67,7 +67,7 @@ ENERGY_MAX = get_energy_consumption(0)
 
 
 # modified from data_manager.py
-init_data_file = 'data/init_location.xlsx'
+init_data_file = '../data/init_location.xlsx'
 
 
 def read_init_location(entity_type='user', index=0):
@@ -80,10 +80,10 @@ def read_init_location(entity_type='user', index=0):
         return None
 
 
-# load and plot everything
+# load and plots everything
 class LoadAndPlot(object):
     """
-    load date and plot 2022-07-22 16_16_26
+    load date and plots 2022-07-22 16_16_26
     """
 
     def __init__(self, store_path, \
@@ -150,12 +150,12 @@ class LoadAndPlot(object):
 
     def plot(self):
         """
-        plot result
+        plots result
         b--blue c--cyan(青色） g--green k--black m--magenta（紫红色） r--red w--white y--yellow
         """
-        if not os.path.exists(self.store_path + 'plot'):
-            os.makedirs(self.store_path + 'plot')
-            os.makedirs(self.store_path + 'plot/RIS')
+        if not os.path.exists(self.store_path + 'plots'):
+            os.makedirs(self.store_path + 'plots')
+            os.makedirs(self.store_path + 'plots/RIS')
 
         color_list = ['b', 'g', 'c', 'k', 'm', 'r', 'y']
 
@@ -169,17 +169,17 @@ class LoadAndPlot(object):
                 step_num_per_episode.append(int(row[0]))
 
         ###############################
-        # plot reward
+        # plots reward
         ###############################
         fig = plt.figure('reward')
         plt.plot(range(len(self.all_steps['reward'])), self.all_steps['reward'])
         plt.xlabel("Time Steps ($t$)")
         plt.ylabel("Reward")
-        plt.savefig(self.store_path + 'plot/reward.png')
+        plt.savefig(self.store_path + 'plots/reward.png')
         plt.cla()
 
         ###############################
-        # plot secure capacity
+        # plots secure capacity
         ###############################
         fig = plt.figure('secure_capacity')
         for i in range(self.user_num):
@@ -188,11 +188,11 @@ class LoadAndPlot(object):
         plt.legend(['user_' + str(i) for i in range(self.user_num)])
         plt.xlabel("Time Steps ($t$)")
         plt.ylabel("Secure Capacity")
-        plt.savefig(self.store_path + 'plot/secure_capacity.png')
+        plt.savefig(self.store_path + 'plots/secure_capacity.png')
         plt.cla()
 
         ###############################
-        # plot average sum secrecy rate of each episode
+        # plots average sum secrecy rate of each episode
         ###############################
         fig = plt.figure('average_sum_secrecy_rate')
         sum_secrecy_rate = np.array(self.all_steps['secure_capacity'])
@@ -213,7 +213,7 @@ class LoadAndPlot(object):
         plt.plot(range(len(average_sum_secrecy_rate)), average_sum_secrecy_rate)
         plt.xlabel("Episodes (Ep)")
         plt.ylabel("Average Sum Secrecy Rate")
-        plt.savefig(self.store_path + 'plot/average_sum_secrecy_rate.png')
+        plt.savefig(self.store_path + 'plots/average_sum_secrecy_rate.png')
         plt.cla()
 
         print()
@@ -223,7 +223,7 @@ class LoadAndPlot(object):
         print('SSR (bits/s/Hz)\t\t{:.2f}\t\t{:.2f}'.format(average_sum_secrecy_rate[-1], max(average_sum_secrecy_rate)))
 
         ###############################
-        # plot secrecy energy efficient
+        # plots secrecy energy efficient
         ###############################
         fig = plt.figure('average_secrecy_energy_efficiency')
 
@@ -271,7 +271,7 @@ class LoadAndPlot(object):
 
         plt.yticks(np.arange(0, int(max(average_see_kJ)) + 1, step=10))
 
-        plt.savefig(self.store_path + 'plot/average_secrecy_energy_efficiency.png')
+        plt.savefig(self.store_path + 'plots/average_secrecy_energy_efficiency.png')
         plt.cla()
 
         print('Energy (kJ)\t\t{:.2f}\t\t{:.2f}'.format(sum(energies[-1]) / 1000,
@@ -280,7 +280,7 @@ class LoadAndPlot(object):
         print('\nThe final performance is evalulated based on the Last Episode (where exploration=0)\n')
 
         ###############################
-        # plot user capacity
+        # plots user capacity
         ###############################
         fig = plt.figure('user_capacity')
         for i in range(self.user_num):
@@ -289,11 +289,11 @@ class LoadAndPlot(object):
         plt.legend(['user_' + str(i) for i in range(self.user_num)])
         plt.xlabel("Time Steps ($t$)")
         plt.ylabel("User Capacity")
-        plt.savefig(self.store_path + 'plot/user_capacity.png')
+        plt.savefig(self.store_path + 'plots/user_capacity.png')
         plt.cla()
 
         ###############################
-        # plot attacker capacity
+        # plots attacker capacity
         ###############################
         fig = plt.figure('attaker_capacity')
         for i in range(self.attacker_num):
@@ -302,17 +302,17 @@ class LoadAndPlot(object):
         plt.legend(['attacker_' + str(i) for i in range(self.attacker_num)])
         plt.xlabel("Time Steps ($t$)")
         plt.ylabel("Attack Capacity")
-        plt.savefig(self.store_path + 'plot/attaker_capacity.png')
+        plt.savefig(self.store_path + 'plots/attaker_capacity.png')
         plt.close('all')
 
         ###############################
-        # plot ris
+        # plots ris
         ###############################
         for i in range(self.RIS_ant_num):
             self.plot_one_RIS_element(i)
 
         ###############################
-        # plot trajectory
+        # plots trajectory
         ###############################
         self.plot_trajectory()
 
@@ -338,7 +338,7 @@ class LoadAndPlot(object):
         # plt.set_ylabel("position")
         # plt.set_ylabel("position")
         # plt.set_xlabel("Time Steps ($t$)")
-        plt.savefig(self.store_path + 'plot/RIS/RIS_' + str(index) + '_element.png')
+        plt.savefig(self.store_path + 'plots/RIS/RIS_' + str(index) + '_element.png')
         plt.close('all')
         pass
 
@@ -426,7 +426,7 @@ class LoadAndPlot(object):
         plt.xlim(0, 50)
         plt.ylim(-10, 30)
         plt.gca().invert_yaxis()
-        plt.savefig(self.store_path + 'plot/trajectory.png')
+        plt.savefig(self.store_path + 'plots/trajectory.png')
         plt.cla()
 
     def restruct(self):

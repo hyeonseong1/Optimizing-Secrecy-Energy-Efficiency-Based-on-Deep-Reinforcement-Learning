@@ -17,7 +17,7 @@ class Arrow3D(FancyArrowPatch):
 
 class Render(object):
     """
-    plot functions to render the whole system
+    plots functions to render the whole system
     """
     def __init__(self, system, canv_x = (-25, 25), canv_y = (0, 50), canv_z = (0, 60)):
         """
@@ -35,7 +35,7 @@ class Render(object):
         """
         plt.ion()
         ax = self.plot_config()
-        # plot the position of UAV, RIS, Users & Attakers
+        # plots the position of UAV, RIS, Users & Attakers
         self.plot_entities(ax)
         self.plot_channels(ax)
         self.plot_text(ax)
@@ -50,7 +50,7 @@ class Render(object):
         """
         plt.ion()
         ax = self.plot_config()
-        # plot the position of UAV, RIS, Users & Attakers
+        # plots the position of UAV, RIS, Users & Attakers
         self.plot_entities(ax)
         self.plot_channels(ax)
         self.plot_text(ax)
@@ -136,7 +136,7 @@ class Render(object):
         
     def plot_one_channel(self, ax, channel, color, text = "channel"):
         """
-        function used in plot channels to show only one channel
+        function used in plots channels to show only one channel
         """        
         arrow_side_coor = channel.receiver.coordinate
         point_side_coor = channel.transmitter.coordinate

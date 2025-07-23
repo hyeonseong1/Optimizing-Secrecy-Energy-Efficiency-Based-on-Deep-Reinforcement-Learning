@@ -252,8 +252,7 @@ import matplotlib.pyplot as plt
 
 xaxis = list(range(episode_num))
 plt.plot(xaxis, see)
-plt.title('reward (not averaged)')
-plt.xlabel('epoch')
+plt.xlabel('episode')
 plt.ylabel('SEE')
-plt.savefig(f'./reward_png/SEE_ppo_base.png')
+plt.savefig(f'./SEE_per_Episodes/SEE_ppo_base.png')
 plt.show()
