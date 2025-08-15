@@ -1,0 +1,7 @@
+Algorithm,Component,Total Params,Trainable,Non-trainable,Buffers,Params (M)
+DDPG,Actor,243878,243878,0,0,0.244
+DDPG,Critic,244133,244133,0,0,0.244
+TD3,Actor,243878,243878,0,0,0.244
+TD3,Critic,244133,244133,0,0,0.244
+SimBa(PPO),Actor,272900,272900,0,55,0.273
+SimBa(PPO),Critic,536321,536321,0,55,0.536

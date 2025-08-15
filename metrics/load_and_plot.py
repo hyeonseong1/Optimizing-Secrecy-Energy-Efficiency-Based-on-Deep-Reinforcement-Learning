@@ -67,8 +67,7 @@ ENERGY_MAX = get_energy_consumption(0)
 
 
 # modified from data_manager.py
-init_data_file = '../data/init_location.xlsx'
-
+init_data_file = 'data/init_location.xlsx'
 
 def read_init_location(entity_type='user', index=0):
     if entity_type == 'user' or 'attacker' or 'RIS' or 'RIS_norm_vec' or 'UAV':

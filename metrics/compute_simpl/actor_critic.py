@@ -11,9 +11,9 @@ def compute_simpl_AC():
     hidden   = 128
     n_action = 20   # 2
     steps    = 100
-    amp      = 1.0
+    amp      = 1.0  # amplify factor, default: 1.0 <- original input
     n_samples = 100
-    grid_range = (-1, 1)
+    grid_range = (-100, 100)
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     # Initialize Actor/ Critic

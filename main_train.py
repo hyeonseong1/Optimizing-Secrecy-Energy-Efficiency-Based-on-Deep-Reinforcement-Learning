@@ -12,8 +12,6 @@ parser.add_argument('--ep-num', type=int, required=False, default=300,
                     help="how many episodes do you want to train yout DRL")
 parser.add_argument('--trained-uav', default=False, action='store_true',
                     help='use trained uav instead of retraining')
-parser.add_argument('--algo', type=str, required=False, default='simba',
-                    help="new architecture simba or conventional ppo!")
 
 args = parser.parse_args()
 REWARD_DESIGN = args.reward
@@ -26,8 +24,6 @@ import math
 import time
 from environment.env import MiniSystem
 
-
-
 episode_num = args.ep_num
 episode_cnt = 0
 step_num = 100
@@ -39,16 +35,10 @@ lr_step_size = 300
 decay_rate = 0.5
 k_epoch = 10
 eps_clip = 0.2
-if args.algo == 'ppo':
-    from algorithms.ppo import PPOAgent
-    project_name = f'pre-trained_uav/PPO_{REWARD_DESIGN}' if TRAINED_UAV else \
-        f'PPO/ppo_{REWARD_DESIGN}_{args.ep_num}_{k_epoch}'
-elif args.algo == 'simba':
-    from algorithms.simba import PPOAgent
-    project_name = f'pre-trained_uav/SIMBA_{REWARD_DESIGN}' if TRAINED_UAV else \
-        f'SIMBA/simba_{REWARD_DESIGN}'
-else:
-    assert error
+
+from algorithms.simba import PPOAgent
+project_name = f'pre-trained_uav/SIMBA_{REWARD_DESIGN}' if TRAINED_UAV else \
+    f'SIMBA/simba_{REWARD_DESIGN}'
 
 system = MiniSystem(
     user_num=2,
@@ -70,70 +60,37 @@ if_G_fixed = False
 if_BS = False
 if_robust = True
 
-####### PPO #######
-if args.algo == 'ppo':
-    agent_ris = PPOAgent(
-        alpha = lr1,
-        beta = lr2,
-        input_dim = system.get_system_state_dim(),
-        n_action = system.get_system_action_dim() - 2,
-        lamda = 0.95,
-        gamma = 0.99,
-        eps_clip = eps_clip,
-        layer1_size = 256,
-        layer2_size = 256,
-        batch_size = batch_size,
-        K_epochs = k_epoch,
-        noise = 'AWGN',
-    )
-    agent_uav = PPOAgent(
-        alpha = lr1,
-        beta = lr2,
-        input_dim = 3,
-        n_action = 2,
-        lamda = 0.95,
-        gamma = 0.99,
-        eps_clip = eps_clip,
-        layer1_size = 256,
-        layer2_size = 256,
-        batch_size = batch_size,
-        K_epochs = k_epoch,
-        noise = 'AWGN',
-    )
 ####### SIMBA #######
-elif args.algo == 'simba':
-    agent_ris = PPOAgent(
-        alpha=lr1,
-        beta=lr2,
-        input_dim=system.get_system_state_dim(),
-        n_action=system.get_system_action_dim() - 2,
-        lamda=0.95,
-        gamma=0.99,
-        eps_clip=eps_clip,
-        layer_size=128,
-        batch_size=batch_size,
-        K_epochs=k_epoch,
-        noise='AWGN',
-        num_block1=2,
-        num_block2=4,
-    )
-    agent_uav = PPOAgent(
-        alpha=lr1,
-        beta=lr2,
-        input_dim=3,
-        n_action=2,
-        lamda=0.95,
-        gamma=0.99,
-        eps_clip=eps_clip,
-        layer_size=128,
-        batch_size=batch_size,
-        K_epochs=k_epoch,
-        noise='AWGN',
-        num_block1=2,
-        num_block2=2,
-    )
-else:
-    assert error
+agent_ris = PPOAgent(
+    alpha=lr1,
+    beta=lr2,
+    input_dim=system.get_system_state_dim(),
+    n_action=system.get_system_action_dim() - 2,
+    lamda=0.95,
+    gamma=0.99,
+    eps_clip=eps_clip,
+    layer_size=128,
+    batch_size=batch_size,
+    K_epochs=k_epoch,
+    noise='AWGN',
+    num_block1=2,
+    num_block2=4,
+)
+agent_uav = PPOAgent(
+    alpha=lr1,
+    beta=lr2,
+    input_dim=3,
+    n_action=2,
+    lamda=0.95,
+    gamma=0.99,
+    eps_clip=eps_clip,
+    layer_size=128,
+    batch_size=batch_size,
+    K_epochs=k_epoch,
+    noise='AWGN',
+    num_block1=2,
+    num_block2=2,
+)
 
 if TRAINED_UAV:
     benchmark = f'data/storage/benchmark/ppo_{REWARD_DESIGN}_benchmark'
@@ -141,7 +98,6 @@ if TRAINED_UAV:
         load_file_actor=benchmark + '/Actor_UAV_ppo',
         load_file_critic=benchmark + '/Critic_UAV_ppo'
     )
-
 
 from datetime import datetime
 
@@ -163,12 +119,9 @@ while episode_cnt < episode_num:
         observarion_ris = list(
             np.array(tmp) + 0.6 * 1e-7 * z
         )
-        # print(observarion_ris)
-        # observarion_ris = np.clip(observarion_ris, -1e3, 1e3)
     else:
         observarion_ris = system.observe()
     observarion_uav = list(system.UAV.coordinate)
-    # observarion_uav = np.clip(observarion_uav, -1e3, 1e3)
 
     while step_cnt < step_num:
         # 1 count num of step in one episode
@@ -192,7 +145,6 @@ while episode_cnt < episode_num:
                 action_ris[0:0 + 2 * system.UAV.ant_num * system.user_num] = np.array(
                     [-0.0313, -0.9838, 0.3210, 1.0, -0.9786, -0.1448, 0.3518, 0.5813, -1.0, -0.2803, -0.4616, -0.6352,
                      -0.1449, 0.7040, 0.4090, -0.8521]) * math.pow(episode_cnt / episode_num, 2) * 0.7
-                # action_ris[0:0+2 * system.UAV.ant_num * system.user_num]=len(action_ris[0:0+2 * system.UAV.ant_num * system.user_num])*[0.5]
             # 3 get newstate, reward
             if system.if_with_RIS:
                 next_state_ris, reward, done, info = system.step(
@@ -255,4 +207,3 @@ plt.plot(xaxis, see)
 plt.xlabel('episode')
 plt.ylabel('SEE')
 plt.savefig(f'./see_per_episodes/see_ppo_base.png')
-plt.show()

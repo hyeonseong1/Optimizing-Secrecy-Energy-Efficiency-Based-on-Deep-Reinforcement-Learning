@@ -13,7 +13,7 @@ def compute_simpl_simba():
     steps = 300
     amp = 1.0
     n_samples = 100
-    grid_range = (-1, 1)
+    grid_range = (-100, 100)
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     # Initialize SimBa PPOAgent

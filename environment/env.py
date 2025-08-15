@@ -271,7 +271,7 @@ class MiniSystem(object):
         """
         reward = 0
         reward_ = 0
-        P = np.trace(self.UAV.G * self.UAV.G.H)
+        P = np.trace(self.UAV.G * self.UAV.G.H)     # UAV comm energy penalty
         if abs(P) > abs(self.UAV.G_Pmax) :
             reward = abs(self.UAV.G_Pmax) - abs(P)
             reward /= self.power_factor 

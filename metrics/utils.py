@@ -10,6 +10,7 @@ def make_linspace_points(start, end, steps, device=None, dtype=torch.float32):
     pts = torch.stack([m.reshape(-1) for m in mesh], dim=1)
     return pts  # (steps**D, D)
 
+# TODO: apply Nyquist-Shannon limit to sample k
 def get_mean_frequency_2d(coeff_2d: torch.Tensor):
     """Get the mean frequency of the 2D Fourier coefficients."""
 

@@ -121,6 +121,25 @@ class ResidualFFBlock(nn.Module):
         h = self.fc2(h)
         return x + h
 
+# class ResidualFFBlock(nn.Module):
+#     def __init__(self, hidden_dim, expansion_factor: int = 4):
+#         super().__init__()
+#         self.hidden_dim = hidden_dim
+#         self.expanded_dim = hidden_dim * expansion_factor
+#
+#         self.ln  = nn.LayerNorm(hidden_dim)
+#         self.fc1 = nn.Linear(hidden_dim, self.expanded_dim)
+#         self.act = nn.ReLU()
+#         self.fc2 = nn.Linear(self.expanded_dim, hidden_dim)
+#
+#     def forward(self, x: torch.Tensor) -> torch.Tensor:
+#         h = self.ln(x)
+#         h = self.fc1(h)
+#         h = self.act(h)
+#         h = self.fc2(h)
+#         return x + h
+
+
 class Actor(nn.Module):
     def __init__(self,
                  alpha,

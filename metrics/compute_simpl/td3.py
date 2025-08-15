@@ -29,7 +29,7 @@ def compute_simpl_td3(
     steps=100,
     amp=1.0,
     n_samples=100,
-    grid_range=(-1, 1),
+    grid_range=(-100, 100),
     device=None
 ):
     # device 설정
