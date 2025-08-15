@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 # see_compare.py
 
+"""
+usage:
+python3 metrics/see_compare.py --paths data/storage/SIMBA/simba_see_10 data/storage/T5D/td3_see data/storage/DDPG/ddpg_see --labels "Proposed" "T5D" "TDDRL" --ep-num 300 --out plots/comparison_result.png
+"""
+
 import os
 import argparse
 import numpy as np

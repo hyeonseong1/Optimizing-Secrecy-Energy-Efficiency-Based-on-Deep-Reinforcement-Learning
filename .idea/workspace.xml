@@ -4,21 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f09ff77d-37e1-4e07-9383-4a84b809f02e" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/metrics/compute_simpl/ddpg.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/metrics/total_params.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/algorithms/actor_critic.py" beforeDir="false" afterPath="$PROJECT_DIR$/algorithms/actor_critic.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/algorithms/simba.py" beforeDir="false" afterPath="$PROJECT_DIR$/algorithms/simba.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/environment/env.py" beforeDir="false" afterPath="$PROJECT_DIR$/environment/env.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main_train.py" beforeDir="false" afterPath="$PROJECT_DIR$/main_train.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/metrics/calculate_simplicity.py" beforeDir="false" afterPath="$PROJECT_DIR$/metrics/calculate_simplicity.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/metrics/compute_simpl/actor_critic.py" beforeDir="false" afterPath="$PROJECT_DIR$/metrics/compute_simpl/actor_critic.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/metrics/compute_simpl/simba.py" beforeDir="false" afterPath="$PROJECT_DIR$/metrics/compute_simpl/simba.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/metrics/compute_simpl/td3.py" beforeDir="false" afterPath="$PROJECT_DIR$/metrics/compute_simpl/td3.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/metrics/load_and_plot.py" beforeDir="false" afterPath="$PROJECT_DIR$/metrics/load_and_plot.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/metrics/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/metrics/utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/see_per_episodes/see_ppo_base.png" beforeDir="false" afterPath="$PROJECT_DIR$/see_per_episodes/see_ppo_base.png" afterDir="false" />
-    </list>
+    <list default="true" id="f09ff77d-37e1-4e07-9383-4a84b809f02e" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
