@@ -9,15 +9,15 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--reward', type=str, required=False, default='see',
                     help="which reward would you like to implement ['ssr', 'see']")
 parser.add_argument('--ep-num', type=int, required=False, default=300,
-                    help="how many episodes do you want to train yout DRL")
+                    help="how many episodes do you want to train your DRL")
 parser.add_argument('--trained-uav', default=False, action='store_true',
                     help='use trained uav instead of retraining')
+parser.add_argument('--algo', type=str, required=True, default='SIMBA',
+                    help="select algorithms to train agents (SIMBA / PPO / TD3 / DDPG)")
 
 args = parser.parse_args()
-REWARD_DESIGN = args.reward
-TRAINED_UAV = args.trained_uav
 
-assert REWARD_DESIGN in ['ssr', 'see'], "reward must be ['ssr', 'see']"
+assert args.reward in ['ssr', 'see'], "reward must be ['ssr', 'see']"
 
 import numpy as np
 import math
@@ -36,9 +36,13 @@ decay_rate = 0.5
 k_epoch = 10
 eps_clip = 0.2
 
-from algorithms.simba import PPOAgent
-project_name = f'pre-trained_uav/SIMBA_{REWARD_DESIGN}' if TRAINED_UAV else \
-    f'SIMBA/simba_{REWARD_DESIGN}'
+from algorithms.simba import SIMBAagent
+from algorithms.ppo import PPOAgent
+from algorithms.td3 import TD3Agent
+from algorithms.ddpg import DDPGAgent
+
+project_name = f'pre-trained_uav/{args.algo}_{args.reward}' if args.trained_uav else \
+    f'{args.algo}/{args.algo.lower()}_{args.reward}'
 
 system = MiniSystem(
     user_num=2,
@@ -50,7 +54,7 @@ system = MiniSystem(
     if_movements=True,
     reverse_x_y=(False, False),
     if_UAV_pos_state=True,
-    reward_design=REWARD_DESIGN,
+    reward_design=args.reward,
     project_name=project_name,
     step_num=step_num
 )
@@ -61,39 +65,74 @@ if_BS = False
 if_robust = True
 
 ####### SIMBA #######
-agent_ris = PPOAgent(
-    alpha=lr1,
-    beta=lr2,
-    input_dim=system.get_system_state_dim(),
-    n_action=system.get_system_action_dim() - 2,
-    lamda=0.95,
-    gamma=0.99,
-    eps_clip=eps_clip,
-    layer_size=128,
-    batch_size=batch_size,
-    K_epochs=k_epoch,
-    noise='AWGN',
-    num_block1=2,
-    num_block2=4,
-)
-agent_uav = PPOAgent(
-    alpha=lr1,
-    beta=lr2,
-    input_dim=3,
-    n_action=2,
-    lamda=0.95,
-    gamma=0.99,
-    eps_clip=eps_clip,
-    layer_size=128,
-    batch_size=batch_size,
-    K_epochs=k_epoch,
-    noise='AWGN',
-    num_block1=2,
-    num_block2=2,
-)
+if args.algo == 'SIMBA':
+    agent_ris = SIMBAagent(
+        alpha=lr1, beta=lr2,
+        input_dim=system.get_system_state_dim(),
+        n_action=system.get_system_action_dim() - 2,
+        lamda=0.95, gamma=0.99, eps_clip=eps_clip,
+        layer_size=128, batch_size=batch_size,
+        K_epochs=k_epoch, noise='AWGN',
+        num_block1=2, num_block2=4,
+    )
+    agent_uav = SIMBAagent(
+        alpha=lr1, beta=lr2,
+        input_dim=3, n_action=2,
+        lamda=0.95, gamma=0.99, eps_clip=eps_clip,
+        layer_size=128, batch_size=batch_size,
+        K_epochs=k_epoch, noise='AWGN',
+        num_block1=2, num_block2=2,
+    )
+elif args.algo == 'PPO':
+    agent_ris = PPOAgent(
+        alpha=lr1, beta=lr2,
+        input_dim=system.get_system_state_dim(),
+        n_action=system.get_system_action_dim() - 2,
+        lamda=0.95, gamma=0.99, eps_clip=eps_clip,
+        batch_size=batch_size, K_epochs=k_epoch, noise='AWGN',
+    )
+    agent_uav = PPOAgent(
+        alpha=lr1, beta=lr2,
+        input_dim=3, n_action=2,
+        lamda=0.95, gamma=0.99, eps_clip=eps_clip,
+        batch_size=batch_size,K_epochs=k_epoch, noise='AWGN',
+    )
+elif args.algo == 'TD3':
+    agent_ris = TD3Agent(
+        alpha=1e-4, beta=1e-3, env=system,
+        input_dims=system.get_system_state_dim(),
+        n_actions=system.get_system_action_dim() - 2,
+        tau=1e-3, batch_size=64, max_size=1000000,
+        update_actor_interval=2, noise='AWGN',
+        layer1_size=800, layer2_size=600, layer3_size=512, layer4_size=256,
+    )
+    agent_uav = TD3Agent(
+        alpha=1e-4, beta=1e-3, env=system,
+        input_dims=3, n_actions=2,
+        tau=1e-3, batch_size=64, max_size=1000000,
+        update_actor_interval=2, noise='AWGN',
+        layer1_size=400, layer2_size=300, layer3_size=256, layer4_size=128,
+    )
+elif args.algo == 'DDPG':
+    agent_ris = DDPGAgent(
+        alpha=1e-4, beta=1e-3, env=system,
+        input_dims=system.get_system_state_dim(),
+        n_actions=system.get_system_action_dim() - 2,
+        tau=1e-3, batch_size=64, max_size=1000000, noise='AWGN',
+        layer1_size=800, layer2_size=600, layer3_size=512, layer4_size=256,
+    )
+    agent_uav = DDPGAgent(
+        alpha=1e-4, beta=1e-3, env=system,
+        input_dims=3, n_actions=2,
+        tau=1e-3, batch_size=64, max_size=1000000, noise='AWGN',
+        layer1_size=400, layer2_size=300, layer3_size=256, layer4_size=128,
+    )
+else:
+    pass
 
-if TRAINED_UAV:
-    benchmark = f'data/storage/benchmark/ppo_{REWARD_DESIGN}_benchmark'
+
+if args.trained_uav:
+    benchmark = f'data/storage/benchmark/ppo_{args.reward}_benchmark'
     agent_uav.load_models(
         load_file_actor=benchmark + '/Actor_UAV_ppo',
         load_file_critic=benchmark + '/Critic_UAV_ppo'
@@ -171,6 +210,12 @@ while episode_cnt < episode_num:
             agent_ris.store_transition(observarion_ris, action_ris, reward, next_state_ris, int(done))
             agent_uav.store_transition(observarion_uav, action_uav, reward, next_state_uav, int(done))
 
+            if args.algo == 'TD3' or args.algo == 'DDPG':
+                # 5 update agent when buffer is full
+                agent_ris.learn()
+                if not args.trained_uav:
+                    agent_uav.learn()
+
             observarion_ris = next_state_ris
             observarion_uav = next_state_uav
             if done == True:
@@ -178,10 +223,11 @@ while episode_cnt < episode_num:
             else:
                 # system.render_obj.render_pause()  # no rendering for faster
                 time.sleep(0.001)  # time.sleep(1)
-    # 5 update agent when buffer is full
-    agent_ris.learn()
-    if not TRAINED_UAV:
-        agent_uav.learn()
+    if args.algo == 'SIMBA' or args.algo == 'PPO':
+        # 5 update agent when buffer is full
+        agent_ris.learn()
+        if not args.trained_uav:
+            agent_uav.learn()
     system.data_manager.save_file(episode_cnt=episode_cnt)
     system.reset()
     print("ep_num: " + str(episode_cnt) + "   ep_score:  " + str(score_per_ep))
@@ -200,10 +246,3 @@ end_time = datetime.now()
 elapsed_time = end_time - start_time
 print(f'training time elapsed: {elapsed_time}')
 
-import matplotlib.pyplot as plt
-
-xaxis = list(range(episode_num))
-plt.plot(xaxis, see)
-plt.xlabel('episode')
-plt.ylabel('SEE')
-plt.savefig(f'./see_per_episodes/see_ppo_base.png')

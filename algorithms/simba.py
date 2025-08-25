@@ -171,13 +171,12 @@ class Actor(nn.Module):
         for blk in self.blocks:  # N × residual block
             x = blk(x)
         x = self.post_ln(x)  # final LayerNorm
-
         mu = self.mu(x)
         mu = torch.clamp(mu, -5, 5)
-
         log_std = self.std(x)
         log_std = torch.clamp(log_std, -5, 1)
-        std = torch.exp(log_std)
+        std = torch.exp(log_std).clamp(min=1e-3)
+
         return mu, std # UAV coordination(3) or RIS beamforming(20)
 
 
@@ -213,7 +212,7 @@ class Critic(nn.Module):
         return v
 
 
-class PPOAgent(object):
+class SIMBAagent(object):
     def __init__(self,
                  alpha,
                  beta,
@@ -316,7 +315,6 @@ class PPOAgent(object):
             mu_old, std_old = self.old_actor(states)
 
             # Calculate log probabilities of old actions
-
             old_dist = torch.distributions.Normal(mu_old, std_old)
             # Use arctanh with numerical stability
             arctanh_actions = 0.5 * torch.log((1 + actions + 1e-6) / (1 - actions + 1e-6))
@@ -329,11 +327,13 @@ class PPOAgent(object):
 
             # Calculate log probabilities of actions under current policy
             current_dist = torch.distributions.Normal(mu, std)
-            arctanh_actions = 0.5 * torch.log((1 + actions + 1e-6) / (1 - actions + 1e-6))
+            clamped = actions.clamp(-1 + 1e-6, 1 - 1e-6)
+            arctanh_actions = 0.5 * torch.log((1 + clamped) / (1 - clamped))
             current_log_probs = current_dist.log_prob(arctanh_actions).sum(1, keepdim=True)
 
             # Calculate policy ratio
-            ratios = torch.exp(current_log_probs - old_log_probs)
+            log_ratio = (current_log_probs - old_log_probs).clamp(-20, 20)
+            ratios = log_ratio.exp()
 
             # Calculate surrogate losses
             surr1 = ratios * advantages

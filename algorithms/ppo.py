@@ -108,11 +108,7 @@ class Actor(nn.Module):
         self.n_action = n_action
 
         self.fc1 = nn.Linear(self.input_dim, self.hidden1_dim)
-        self.ln1 = nn.LayerNorm(self.hidden1_dim)
-
         self.fc2 = nn.Linear(self.hidden1_dim, self.hidden2_dim)
-        self.ln2 = nn.LayerNorm(self.hidden2_dim)
-
         self.mu = nn.Linear(self.hidden2_dim, self.n_action)
         self.std = nn.Linear(self.hidden2_dim, self.n_action)
 
@@ -126,17 +122,14 @@ class Actor(nn.Module):
         self.to(self.device)
 
     def forward(self, state):
-        x = self.fc1(state)
-        x = self.ln1(x)
-        x = torch.relu(x)
-        x = self.fc2(x)
-        x = self.ln2(x)
-        x = torch.relu(x)
+        x = torch.relu(self.fc1(state))
+        x = torch.relu(self.fc2(x))
         mu = self.mu(x)
-        mu = torch.clamp(mu, -10, 10)
+        mu = torch.clamp(mu, -5, 5)
         log_std = self.std(x)
-        log_std = torch.clamp(log_std, -10, 2)
-        std = torch.exp(log_std)
+        log_std = torch.clamp(log_std, -5, 1)
+        std = torch.exp(log_std).clamp(min=1e-3)
+
         return mu, std # UAV coordination(3) or RIS beamforming(20)
 
 
@@ -147,39 +140,30 @@ class Critic(nn.Module):
                  hidden1_dim,
                  hidden2_dim,
                  n_action,
-                 activation_f=torch.relu,
-                 optimizer=optim.Adam):
+                 ):
         super(Critic, self).__init__()
         self.input_dim = input_dim
         self.hidden1_dim = hidden1_dim
         self.hidden2_dim = hidden2_dim
         self.n_action = n_action
-        self.activation = activation_f
 
         self.fc1 = nn.Linear(self.input_dim, self.hidden1_dim)
-        self.ln1 = nn.LayerNorm(self.hidden1_dim)
-
         self.fc2 = nn.Linear(self.hidden1_dim, self.hidden2_dim)
-        self.ln2 = nn.LayerNorm(self.hidden2_dim)
-
         self.v = nn.Linear(self.hidden2_dim, 1)
 
         he_initialization(self.fc1)
         he_initialization(self.fc2)
         he_initialization(self.v)
 
-        self.optimizer = optimizer(self.parameters(), lr=beta)
+        self.optimizer = torch.optim.Adam(self.parameters(), lr=beta)
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         self.to(self.device)
 
     def forward(self, state):
-        state_value = self.fc1(state)
-        state_value = self.ln1(state_value)
-        state_value = self.activation(state_value)
-        state_value = self.fc2(state_value)
-        state_value = self.ln2(state_value)
-        state_value = self.activation(state_value)
+        state_value = torch.relu(self.fc1(state))
+        state_value = torch.relu(self.fc2(state_value))
         state_value = self.v(state_value)
+
         return state_value
 
 
@@ -284,7 +268,6 @@ class PPOAgent(object):
             mu_old, std_old = self.old_actor(states)
 
             # Calculate log probabilities of old actions
-
             old_dist = torch.distributions.Normal(mu_old, std_old)
             # Use arctanh with numerical stability
             arctanh_actions = 0.5 * torch.log((1 + actions + 1e-6) / (1 - actions + 1e-6))
@@ -297,11 +280,13 @@ class PPOAgent(object):
 
             # Calculate log probabilities of actions under current policy
             current_dist = torch.distributions.Normal(mu, std)
-            arctanh_actions = 0.5 * torch.log((1 + actions + 1e-6) / (1 - actions + 1e-6))
+            clamped = actions.clamp(-1 + 1e-6, 1 - 1e-6)
+            arctanh_actions = 0.5 * torch.log((1 + clamped) / (1 - clamped))
             current_log_probs = current_dist.log_prob(arctanh_actions).sum(1, keepdim=True)
 
             # Calculate policy ratio
-            ratios = torch.exp(current_log_probs - old_log_probs)
+            log_ratio = (current_log_probs - old_log_probs).clamp(-20, 20)
+            ratios = log_ratio.exp()
 
             # Calculate surrogate losses
             surr1 = ratios * advantages

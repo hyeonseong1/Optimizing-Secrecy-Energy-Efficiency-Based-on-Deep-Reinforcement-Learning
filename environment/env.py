@@ -77,8 +77,8 @@ class MiniSystem(object):
         self.border = [(-25,25), (0, 50)]
         # 1.init entities: 1 UAV, 1 RIS, many users and attackers
         self.data_manager = DataManager(file_path='./data', project_name = project_name, \
-        store_list = ['beamforming_matrix', 'reflecting_coefficient', 'UAV_state', 'user_capacity',
-                      'secure_capacity', 'attaker_capacity','G_power', 'reward','UAV_movement'])
+                                        store_list = ['beamforming_matrix', 'reflecting_coefficient', 'UAV_state', 'user_capacity',
+                                                      'secure_capacity', 'attaker_capacity','G_power', 'reward','UAV_movement'])
         # 1.1 init UAV position and beamforming matrix
         self.UAV = UAV(
             coordinate=self.data_manager.read_init_location('UAV', 0), 
@@ -88,10 +88,9 @@ class MiniSystem(object):
         self.power_factor = 100
         self.UAV.G_Pmax =  np.trace(self.UAV.G * self.UAV.G.H) * self.power_factor
         # 1.2 init RIS
-        self.RIS = RIS(\
-        coordinate=self.data_manager.read_init_location('RIS', 0), \
-        coor_sys_z=self.data_manager.read_init_location('RIS_norm_vec', 0), \
-        ant_num=RIS_ant_num)
+        self.RIS = RIS(coordinate=self.data_manager.read_init_location('RIS', 0), \
+                       coor_sys_z=self.data_manager.read_init_location('RIS_norm_vec', 0), \
+                       ant_num=RIS_ant_num)
         # 1.3 init users
         self.user_list = []
         

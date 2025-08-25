@@ -42,11 +42,11 @@ class AWGNActionNoise(object):
         return x
 
 class ReplayBuffer(object):
-    def __init__(self, max_size, input_shape, n_actions):
+    def __init__(self, max_size, input_dim, n_actions):
         self.mem_size = max_size
         self.mem_cntr = 0
-        self.state_memory = np.zeros((self.mem_size, *input_shape))
-        self.new_state_memory = np.zeros((self.mem_size, *input_shape))
+        self.state_memory = np.zeros((self.mem_size, input_dim))
+        self.new_state_memory = np.zeros((self.mem_size, input_dim))
         self.action_memory = np.zeros((self.mem_size, n_actions))
         self.reward_memory = np.zeros(self.mem_size)
         self.terminal_memory = np.zeros(self.mem_size, dtype=np.float32)
@@ -87,7 +87,7 @@ class CriticNetwork(nn.Module):
         self.n_actions = n_actions
         self.checkpoint_file = os.path.join(chkpt_dir,name+'_ddpg')
         self.load_file = 'C:\\demo\\other_branch\\Learning-based_Secure_Transmission_for_RIS_Aided_mmWave-UAV_Communications_with_Imperfect_CSI\\data\\mannal_store\\models\\Critic_UAV_ddpg'
-        self.fc1 = nn.Linear(*self.input_dims, self.fc1_dims)
+        self.fc1 = nn.Linear(self.input_dims, self.fc1_dims)
         f1 = 1./np.sqrt(self.fc1.weight.data.size()[0])
         torch.nn.init.uniform_(self.fc1.weight.data, -f1, f1)
         torch.nn.init.uniform_(self.fc1.bias.data, -f1, f1)
@@ -175,7 +175,7 @@ class ActorNetwork(nn.Module):
         self.n_actions = n_actions
         self.checkpoint_file = os.path.join(chkpt_dir,name+'_ddpg')
         self.load_file = 'C:\\demo\\other_branch\\Learning-based_Secure_Transmission_for_RIS_Aided_mmWave-UAV_Communications_with_Imperfect_CSI\\data\\mannal_store\\models\\Actor_UAV_ddpg'
-        self.fc1 = nn.Linear(*self.input_dims, self.fc1_dims)
+        self.fc1 = nn.Linear(self.input_dims, self.fc1_dims)
         f1 = 1./np.sqrt(self.fc1.weight.data.size()[0])
 #        torch.nn.init.uniform_(self.fc1.weight.data, -f1, f1)
 #        torch.nn.init.uniform_(self.fc1.bias.data, -f1, f1)
@@ -283,7 +283,7 @@ class DDPGAgent(object):
         # tau = 1 means copy parameters to target
         self.update_network_parameters(tau=1)
 
-    def choose_action(self, observation, greedy=0.5, epsilon = 1):
+    def act(self, observation, greedy=0.5, epsilon = 1):
         self.actor.eval()
         observation = torch.tensor(observation, dtype=torch.float).to(self.actor.device)
         mu = self.actor.forward(observation).to(self.actor.device)
@@ -292,8 +292,7 @@ class DDPGAgent(object):
         self.actor.train()
         return mu_prime.cpu().detach().numpy()
 
-
-    def remember(self, state, action, reward, new_state, done):
+    def store_transition(self, state, action, reward, new_state, done):
         self.memory.store_transition(state, action, reward, new_state, done)
 
     def learn(self):
