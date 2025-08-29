@@ -32,7 +32,6 @@ batch_size = 100
 lr1 = 3e-4  # 1e-4
 lr2 = 3e-3  # 1e-3
 lr_step_size = 300
-decay_rate = 0.5
 k_epoch = 10
 eps_clip = 0.2
 
