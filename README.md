@@ -30,10 +30,13 @@ python3 main_train.py --algo TD3
 ##### TDDRL #####
 python3 main_train.py --algo DDPG
 ```
-Use metrics to see performances of your trained model 
+Use metrics to see performances or parameters of your trained model 
 ```commandline
 python3 metrics/load_and_plot.py --path data/storage/[algorithm]/[your data path]
-python3 see_compare.py --paths [simba] [t5d] --labels "SIMBA" "PPO" "TTD3" "TDDRL" --ep-num 300 --out plots/comparison_result.png
+python3 metrics/see_compare.py --paths [simba] [t5d] --labels "SIMBA" "PPO" "TTD3" "TDDRL" --ep-num 300 --out plots/comparison_result.png
+python3 calculate_simplicity.py
+python3 metrics/plot_average.py   --paths data/storage/DDPG data/storage/TD3 data/storage/PPO data/storage/SIMBA  --labels "TDDRL" "T5D" "DPPO" "LSPPO(Ours)"   --ep-num 300 --out plots/comparison_result.png
+python3 metrics/total_params.py 
 ```
 ---
 ## Reference

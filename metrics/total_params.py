@@ -13,7 +13,7 @@ from pathlib import Path
 
 def parse_args():
     p = argparse.ArgumentParser(description='Count parameters of common RL models and print as a table.')
-    p.add_argument('--repo-path', type=str, default='.', help='Path to repository root containing ddpg.py, td3.py, simba.py')
+    p.add_argument('--repo-path', type=str, default='algorithms/', help='Path to repository root containing ddpg.py, td3.py, simba.py')
     p.add_argument('--input-dim', type=int, default=27)
     p.add_argument('--n-actions', type=int, default=2)
     p.add_argument('--ddpg-hidden', type=int, nargs=4, default=[400,300,256,128],
@@ -64,13 +64,17 @@ def main():
         print('ERROR: failed to import td3.py from', repo, '\n', e)
         raise SystemExit(1)
     try:
+        ppo = __import__('ppo')
+    except Exception as e:
+        print('ERROR: failed to import ppo.py from', repo, '\n', e)
+        raise SystemExit(1)
+    try:
         simba = __import__('simba')
     except Exception as e:
         print('ERROR: failed to import simba.py from', repo, '\n', e)
         raise SystemExit(1)
 
-    in_dim = args.input_dim
-    input_dims = (in_dim,)
+    input_dims = args.input_dim
     n_actions = args.n_actions
     fc1, fc2, fc3, fc4 = args.ddpg_hidden
     simba_hidden = args.simba_hidden
@@ -88,9 +92,12 @@ def main():
     td3_critic = td3.CriticNetwork(beta=1e-3, input_dims=input_dims, fc1_dims=fc1, fc2_dims=fc2,
                                    fc3_dims=fc3, fc4_dims=fc4, n_actions=n_actions, name='Critic_TD3')
 
-    simba_actor = simba.Actor(alpha=1e-3, input_dim=in_dim, hidden_dim=simba_hidden,
+    ppo_actor = ppo.Actor(alpha=1e-3, input_dim=input_dims, hidden1_dim=fc3, hidden2_dim=fc4, n_action=n_actions)
+    ppo_critic = ppo.Critic(beta=1e-3, input_dim=input_dims, hidden1_dim=fc3, hidden2_dim=fc4, n_action=n_actions)
+
+    simba_actor = simba.Actor(alpha=1e-3, input_dim=input_dims, hidden_dim=simba_hidden,
                               n_action=n_actions, num_block=nblock_actor)
-    simba_critic = simba.Critic(beta=1e-3, input_dim=in_dim, hidden_dim=simba_hidden,
+    simba_critic = simba.Critic(beta=1e-3, input_dim=input_dims, hidden_dim=simba_hidden,
                                 num_block=nblock_critic)
 
     models = [
@@ -98,6 +105,8 @@ def main():
         ('DDPG', 'Critic', ddpg_critic),
         ('TD3',  'Actor',  td3_actor),
         ('TD3',  'Critic', td3_critic),
+        ('PPO', 'Actor', ppo_actor),
+        ('PPO', 'Critic', ppo_critic),
         ('SimBa(PPO)', 'Actor',  simba_actor),
         ('SimBa(PPO)', 'Critic', simba_critic),
     ]
