@@ -1,5 +1,3 @@
-
-#!/usr/bin/env python3
 """Parameter count table for DDPG, TD3, and SimBa models.
 
 Usage:

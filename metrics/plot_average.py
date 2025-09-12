@@ -1,16 +1,3 @@
-#!/usr/bin/env python3
-# see_compare.py (multi-run under each algo)
-
-"""
-usage examples:
-
-# 1) 각 알고리즘 폴더의 모든 하위 폴더를 런으로 간주(최대 5개까지)
-python3 metrics/plot_average.py \
-  --paths data/storage/DDPG data/storage/TD3 data/storage/PPO data/storage/SIMBA\
-  --labels "TDDRL" "T5D" "DPPO" "LSPPO(Ours)" \
-  --ep-num 300 --out plots/comparison_result.png
-"""
-
 import os
 import glob
 import argparse
@@ -19,7 +6,7 @@ import matplotlib.pyplot as plt
 from scipy.io import loadmat
 
 # ----------------------------
-# UAV Energy model (원본 유지)
+# UAV Energy model
 # ----------------------------
 P_i    = 790.6715
 P_0    = 580.65
@@ -58,7 +45,6 @@ def compute_average_see(mat_folder, ep_num):
     for i in range(ep_num):
         fn = os.path.join(mat_folder, f"simulation_result_ep_{i}.mat")
         if not os.path.exists(fn):
-            # 파일이 없으면 0 처리
             all_ssr.append(np.array([]))
             all_energy.append([])
             continue
@@ -82,7 +68,7 @@ def compute_average_see(mat_folder, ep_num):
             raise ValueError(f"Unexpected dimension of secure_capacity: {sec.shape}")
         all_ssr.append(ssr)
 
-        # 2) UAV moving (원 코드 관성 유지: 마지막 필드)
+        # 2) UAV moving
         movt_raw = struct[-1]
         movt = movt_raw
         if movt.ndim == 3:
@@ -110,12 +96,6 @@ def compute_average_see(mat_folder, ep_num):
 # Find run folders under an algorithm base path
 # -------------------------------------------------
 def find_run_dirs(algo_base_dir, run_glob=None, max_runs=5):
-    """
-    algo_base_dir 하위의 직속 디렉토리를 '런(=시드)'으로 간주.
-    - run_glob이 주어지면 해당 패턴에 매칭되는 하위 디렉토리만 사용
-    - 사전순 정렬 후 최대 max_runs 개까지 사용
-    - 하위 디렉토리를 못 찾으면 algo_base_dir 자체를 단일 런으로 간주
-    """
     if not os.path.isdir(algo_base_dir):
         return []
 
@@ -125,7 +105,6 @@ def find_run_dirs(algo_base_dir, run_glob=None, max_runs=5):
             if os.path.isdir(d)
         )
     else:
-        # 직속 하위 디렉토리 전부
         candidates = sorted(
             os.path.join(algo_base_dir, d)
             for d in os.listdir(algo_base_dir)
@@ -134,7 +113,6 @@ def find_run_dirs(algo_base_dir, run_glob=None, max_runs=5):
 
     runs = candidates[:max_runs]
     if not runs:
-        # fallback: .mat가 바로 들어있는 단일 런 구조
         return [algo_base_dir]
     return runs
 
@@ -189,23 +167,20 @@ def main():
             continue
 
         run_curves = []
-        for run_dir in run_dirs:                      # 1중: 알고리즘별
-            see_curve = compute_average_see(run_dir, args.ep_num)  # 2중: 런(폴더)별
+        for run_dir in run_dirs:
+            see_curve = compute_average_see(run_dir, args.ep_num)
             run_curves.append(see_curve)
 
         run_curves = np.stack(run_curves, axis=0)  # (R, E)
         mean_curve = run_curves.mean(axis=0)
         std_curve  = run_curves.std(axis=0)
 
-        # 개별 런 곡선(얇게)
         if args.show_runs and len(run_dirs) > 1:
             for rc in run_curves:
                 plt.plot(x, rc, linewidth=1, alpha=0.35)
 
-        # 라벨 치환(원 코드 유지)
         plot_label = "Proposition" if label in ("SIMBA", "Proposed") else label
 
-        # 평균 곡선 + 표준편차 음영
         plt.plot(x, mean_curve, label=f"{plot_label}", linewidth=2.2)
         plt.fill_between(x, mean_curve - std_curve, mean_curve + std_curve, alpha=0.2)
 
