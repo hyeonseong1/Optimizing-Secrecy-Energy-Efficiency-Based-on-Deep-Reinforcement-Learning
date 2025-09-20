@@ -1,6 +1,8 @@
 # Optimizing Secrecy Energy Efficiency Based on Deep Reinforcement Learning
 Multi-agent scenario for uav agent and ris agent in communication when eavesdropper exist
 
+### Current Process: Prepairing a paper to submit.
+
 ----
 
 ## Prerequisites
