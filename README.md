@@ -17,7 +17,7 @@ conda create -n uavris python=3.10
 conda activate uavris
 pip3 install -r requirements.txt
 ```
-You can install different version of torch with compatible cuda version. 
+(Optional) You can install different version of torch with compatible cuda version. 
 ```commandline
 pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 ```
